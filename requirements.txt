@@ -2,6 +2,3 @@ flask
 flask-sqlalchemy
 pytest
 bandit
-pymysql
-python-dotenv
-python-owasp-zap-v2.4
