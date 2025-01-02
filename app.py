@@ -4,6 +4,8 @@ from sqlalchemy import create_engine, text
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import os
+import logging
+import time
 
 # Load environment variables
 load_dotenv()
@@ -17,11 +19,39 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 db = SQLAlchemy(app)
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Database Initialization
 def create_database():
     engine = create_engine('mysql+pymysql://dev:dev_password@tubes-db:3306')
     with engine.connect() as conn:
         conn.execute(text("CREATE DATABASE IF NOT EXISTS tubes_devsecop_app"))
+        logger.info("Database created or already exists.")
+
+# Middleware to validate API Key
+@app.before_request
+def require_api_key():
+    if request.path.startswith('/api/'):
+        api_key = request.headers.get('X-API-KEY')
+        if api_key != API_KEY:
+            logger.warning(f"Unauthorized API request from {request.remote_addr}")
+            return jsonify({"error": "Unauthorized"}), 401
+
+# Wait for database readiness
+def wait_for_db():
+    retries = 5
+    while retries > 0:
+        try:
+            with db.engine.connect() as connection:
+                logger.info("Database connection successful.")
+                return
+        except Exception as e:
+            logger.warning(f"Database connection failed: {e}. Retrying...")
+            retries -= 1
+            time.sleep(5)
+    raise Exception("Database connection failed after retries")
 
 # Models
 class User(db.Model):
@@ -35,25 +65,6 @@ class TodoItem(db.Model):
     content = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('todos', lazy=True))
-
-# Middleware to validate API Key
-@app.before_request
-def require_api_key():
-    if request.path.startswith('/api/'):
-        api_key = request.headers.get('X-API-KEY')
-        if api_key != API_KEY:
-            return jsonify({"error": "Unauthorized"}), 401
-
-def wait_for_db():
-    retries = 5
-    while retries > 0:
-        try:
-            with db.engine.connect() as connection:
-                return
-        except OperationalError:
-            retries -= 1
-            time.sleep(5)
-    raise Exception("Database connection failed after retries")
 
 # Routes
 @app.route('/')
@@ -90,6 +101,8 @@ def login():
     session['user_id'] = user.id
     session['is_admin'] = user.is_admin
 
+    logger.info(f"User {username} logged in as {'admin' if user.is_admin else 'user'}.")
+
     if user.is_admin:
         return redirect(url_for('admin_dashboard'))
     return redirect(url_for('dashboard'))
@@ -110,6 +123,7 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
+    logger.info(f"New user {username} registered.")
     return redirect(url_for('home'))
 
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -123,6 +137,8 @@ def dashboard():
         new_item = TodoItem(content=content, user_id=user_id)
         db.session.add(new_item)
         db.session.commit()
+
+        logger.info(f"New todo added by user {user_id}: {content}")
 
     todos = TodoItem.query.filter_by(user_id=user_id).all()
     return render_template('dashboard.html', todos=todos)
@@ -143,6 +159,8 @@ def admin_dashboard():
             db.session.add(new_user)
             db.session.commit()
 
+            logger.info(f"Admin added new user: {username} ({'admin' if is_admin else 'user'})")
+
     users = User.query.all()
     todos = TodoItem.query.all()
     return render_template('admin_dashboard.html', users=users, todos=todos)
@@ -151,6 +169,7 @@ def admin_dashboard():
 def logout():
     session.pop('user_id', None)
     session.pop('is_admin', None)
+    logger.info("User logged out.")
     return redirect(url_for('home'))
 
 @app.route('/delete_user/<int:user_id>')
@@ -162,6 +181,7 @@ def delete_user(user_id):
     if user:
         db.session.delete(user)
         db.session.commit()
+        logger.info(f"Admin deleted user {user.username}.")
 
     return redirect(url_for('admin_dashboard'))
 
@@ -174,6 +194,7 @@ def delete_todo_admin(todo_id):
     if todo:
         db.session.delete(todo)
         db.session.commit()
+        logger.info(f"Admin deleted todo ID {todo_id}.")
 
     return redirect(url_for('admin_dashboard'))
 
@@ -190,6 +211,7 @@ def api_todos():
         new_todo = TodoItem(content=data['content'], user_id=data['user_id'])
         db.session.add(new_todo)
         db.session.commit()
+        logger.info(f"API: New todo created for user {data['user_id']}: {data['content']}")
         return jsonify({"message": "Todo created successfully!"}), 201
 
 @app.route('/api/users', methods=['GET'])
@@ -198,26 +220,15 @@ def api_users():
     result = [{"id": user.id, "username": user.username, "is_admin": user.is_admin} for user in users]
     return jsonify(result)
 
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
-@app.before_request
-def require_api_key():
-    if request.path.startswith('/api/'):
-        api_key = request.headers.get('X-API-KEY')
-        if api_key != API_KEY:
-            app.logger.warning(f"Unauthorized API request from {request.remote_addr}")
-            return jsonify({"error": "Unauthorized"}), 401
-
 if __name__ == '__main__':
     create_database()
+    wait_for_db()
     with app.app_context():
         db.create_all()
         if not User.query.filter_by(username='admin').first():
             admin_user = User(username='admin', password=generate_password_hash('admin'), is_admin=True)
             db.session.add(admin_user)
             db.session.commit()
+            logger.info("Default admin user created.")
 
     app.run(debug=True, host="0.0.0.0", port=5000)
