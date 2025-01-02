@@ -131,7 +131,10 @@ jobs:
       - name: Install OWASP ZAP CLI
         run: |
           sudo apt-get update
-          sudo apt-get install zaproxy -y
+          wget https://github.com/zaproxy/zaproxy/releases/download/v2.13.0/ZAP_2_13_0_unix.sh
+          chmod +x ZAP_2_13_0_unix.sh
+          sudo ./ZAP_2_13_0_unix.sh -q
+          sudo ln -s /opt/zaproxy/zap.sh /usr/local/bin/zap-cli
           pip install python-owasp-zap-v2.4
 
       - name: Run DAST Scan
