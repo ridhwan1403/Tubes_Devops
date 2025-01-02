@@ -1,4 +1,7 @@
 flask
+flask-sqlalchemy
 pytest
-pytest-cov
 bandit
+owasp-zap-cli
+pymysql
+python-dotenv
