@@ -1,29 +1,68 @@
+# tests/test_app.py
+
 import pytest
-from app import app
+from app import app, db
 
 @pytest.fixture
 def client():
+    # Set up the Flask test client and initialize the database
     app.config['TESTING'] = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SECRET_KEY'] = 'test_secret_key'
+    
     with app.test_client() as client:
+        with app.app_context():
+            db.create_all()
         yield client
 
-def test_home(client):
-    """Test the home page."""
+        # Tear down database
+        with app.app_context():
+            db.session.remove()
+            db.drop_all()
+
+def test_home_page(client):
+    """Test if the home page is accessible."""
     response = client.get('/')
     assert response.status_code == 200
-
-def test_login(client):
-    """Test the login page."""
-    response = client.get('/login?type=user')
-    assert response.status_code == 200
+    assert b"Welcome" in response.data
 
 def test_register(client):
-    """Test the register page."""
-    response = client.get('/register')
-    assert response.status_code == 200
+    """Test user registration."""
+    response = client.post('/register', data={
+        'username': 'testuser',
+        'password': 'testpassword'
+    })
+    assert response.status_code == 302  # Redirect after registration
 
-def test_logout(client):
-    """Test the logout functionality."""
-    response = client.get('/logout', follow_redirects=True)
+def test_login(client):
+    """Test user login."""
+    # First register a user
+    client.post('/register', data={
+        'username': 'testuser',
+        'password': 'testpassword'
+    })
+
+    # Then log in
+    response = client.post('/login', data={
+        'username': 'testuser',
+        'password': 'testpassword'
+    }, follow_redirects=True)
     assert response.status_code == 200
-    assert b"Welcome" in response.data  # Pastikan halaman home muncul setelah logout
+    assert b"Your To-Do List" in response.data
+
+def test_dashboard(client):
+    """Test access to the dashboard."""
+    # Register and log in a user
+    client.post('/register', data={
+        'username': 'testuser',
+        'password': 'testpassword'
+    })
+    client.post('/login', data={
+        'username': 'testuser',
+        'password': 'testpassword'
+    })
+
+    # Access the dashboard
+    response = client.get('/dashboard')
+    assert response.status_code == 200
+    assert b"Your To-Do List" in response.data
