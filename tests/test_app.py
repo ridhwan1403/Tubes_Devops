@@ -5,26 +5,15 @@ from app import app, db
 
 @pytest.fixture
 def client():
-    # Debugging: Print database URI
-    print("DATABASE_URI:", os.getenv('DATABASE_URI'))
-
-    # Konfigurasi database untuk pengujian
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-        'DATABASE_URI', 'mysql+pymysql://root:root@tubes-db-1:3306/tubes_devsecop_app'
-    )
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'test_secret_key')
-
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
     with app.test_client() as client:
         with app.app_context():
             db.create_all()
         yield client
-
-        # Tear down database
         with app.app_context():
-            db.session.remove()
             db.drop_all()
-
+            
 def test_invalid_api_key(client):
     """Test access with invalid API key."""
     response = client.get('/api/todos', headers={"X-API-KEY": "invalid_key"})
