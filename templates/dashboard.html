@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Your To-Do List</h1>
+        <form method="POST" action="/dashboard">
+            <input type="text" name="content" placeholder="Add a new task" required>
+            <button type="submit">Add</button>
+        </form>
+        <ul>
+            {% for todo in todos %}
+            <li>{{ todo.content }} <a href="/delete_todo/{{ todo.id }}" class="delete">Delete</a></li>
+            {% endfor %}
+        </ul>
+        <a href="/logout" class="link">Logout</a>
+    </div>
+</body>
+</html>

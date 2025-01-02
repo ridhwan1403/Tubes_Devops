@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/admin-styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Logout Button -->
+        <div class="logout">
+            <a href="/logout">Logout</a>
+        </div>
+
+        <h1>Admin Dashboard</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul class="flashes">
+            {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Manage Users Form -->
+        <h2>Manage Users</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_user">
+            <input type="text" name="username" placeholder="New Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <label><input type="checkbox" name="is_admin"> Is Admin</label>
+            <button type="submit">Add User</button>
+        </form>
+
+        <!-- Update User Form -->
+        <h2>Update User</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="edit_user">
+            <input type="number" name="user_id" placeholder="User ID to Update" required>
+            <input type="text" name="username" placeholder="New Username">
+            <input type="password" name="password" placeholder="New Password">
+            <label><input type="checkbox" name="is_admin"> Is Admin</label>
+            <button type="submit">Update User</button>
+        </form>
+
+        <!-- Users Table -->
+        <h2>Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Is Admin</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+                    <td>
+                        <a href="/delete_user/{{ user.id }}" class="delete">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Todo List Table -->
+        <h2>Todo List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Content</th>
+                    <th>Owner</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for todo in todos %}
+                <tr>
+                    <td>{{ todo.id }}</td>
+                    <td>{{ todo.content }}</td>
+                    <td>{{ todo.user.username }}</td>
+                    <td>
+                        <a href="/delete_todo/{{ todo.id }}" class="delete">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
