@@ -44,6 +44,17 @@ def require_api_key():
         if api_key != API_KEY:
             return jsonify({"error": "Unauthorized"}), 401
 
+def wait_for_db():
+    retries = 5
+    while retries > 0:
+        try:
+            with db.engine.connect() as connection:
+                return
+        except OperationalError:
+            retries -= 1
+            time.sleep(5)
+    raise Exception("Database connection failed after retries")
+
 # Routes
 @app.route('/')
 def home():
@@ -209,4 +220,4 @@ if __name__ == '__main__':
             db.session.add(admin_user)
             db.session.commit()
 
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5000)

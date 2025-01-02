@@ -77,13 +77,13 @@ jobs:
       - name: Wait for MySQL to be Ready
         run: |
           echo "Waiting for MySQL to be ready..."
-          sleep 40  # Waktu tunggu tambahan untuk MySQL memulai
+          sleep 30  
 
       - name: Run Tests
         env:
-          DATABASE_URI: mysql+pymysql://root:root@test-db:3306/tubes_devsecop_app
+          DATABASE_URI: mysql+pymysql://dev:dev_password@127.0.0.1:3306/tubes_devsecop_app
           SECRET_KEY: test_secret_key
-        run: pytest --cov=app tests/
+        run: pytest --cov=app test_app.py
 
       - name: Stop Docker Compose
         run: docker-compose down
