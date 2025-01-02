@@ -69,7 +69,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Start Docker Compose
-        run: docker-compose up -d db
+        run: docker-compose up -d test-db
 
       - name: Debug Docker Services
         run: docker ps -a 
