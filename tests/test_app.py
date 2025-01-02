@@ -1,5 +1,5 @@
 # tests/test_app.py
-
+import os
 import pytest
 from app import app, db
 
@@ -7,7 +7,7 @@ from app import app, db
 def client():
     # Set up the Flask test client and initialize the database
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/tubes_devsecop_app'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user:password@127.0.0.1:3306/tubes_devsecop_app'
     app.config['SECRET_KEY'] = 'test_secret_key'
     
     with app.test_client() as client:
@@ -19,6 +19,12 @@ def client():
         with app.app_context():
             db.session.remove()
             db.drop_all()
+
+def test_invalid_api_key(client):
+    """Test access with invalid API key."""
+    response = client.get('/api/todos', headers={"X-API-KEY": "invalid_key"})
+    assert response.status_code == 401
+    assert b"Unauthorized" in response.data
 
 def test_home_route():
     client = app.test_client()

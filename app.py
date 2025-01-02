@@ -11,7 +11,10 @@ load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/tubes_devsecop_app'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'DATABASE_URI',
+    'mysql+pymysql://root:root@localhost:3306/tubes_devsecop_app'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 
@@ -19,7 +22,7 @@ db = SQLAlchemy(app)
 
 # Create database if not exists
 def create_database():
-    engine = create_engine('mysql+pymysql://root:@localhost')
+    engine = create_engine('mysql+pymysql://root:root@localhost:3306')
     conn = engine.connect()
     conn.execute(text("CREATE DATABASE IF NOT EXISTS tubes_devsecop_app"))
     conn.close()
@@ -187,6 +190,19 @@ def api_users():
     users = User.query.all()
     result = [{"id": user.id, "username": user.username, "is_admin": user.is_admin} for user in users]
     return jsonify(result)
+
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+@app.before_request
+def require_api_key():
+    if request.path.startswith('/api/'):
+        api_key = request.headers.get('X-API-KEY')
+        if api_key != API_KEY:
+            app.logger.warning(f"Unauthorized API request from {request.remote_addr}")
+            return jsonify({"error": "Unauthorized"}), 401
 
 if __name__ == '__main__':
     create_database()
