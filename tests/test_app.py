@@ -5,6 +5,9 @@ from app import app, db
 
 @pytest.fixture
 def client():
+    # Debugging: Print database URI
+    print("DATABASE_URI:", os.getenv('DATABASE_URI'))
+
     # Set up the Flask test client and initialize the database
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
