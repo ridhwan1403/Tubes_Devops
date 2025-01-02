@@ -110,14 +110,15 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
-        return render_template('register.html')
+        error = request.args.get('error')
+        return render_template('register.html', error=error)
 
     username = request.form['username']
     password = generate_password_hash(request.form['password'])
 
     if User.query.filter_by(username=username).first():
-        flash("Username already exists!", "error")
-        return redirect(url_for('register'))
+        error_message = "Username already exists!"
+        return redirect(url_for('register', error=error_message))
 
     new_user = User(username=username, password=password, is_admin=False)
     db.session.add(new_user)
