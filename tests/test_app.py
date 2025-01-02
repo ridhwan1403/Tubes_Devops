@@ -20,6 +20,12 @@ def client():
             db.session.remove()
             db.drop_all()
 
+def test_home_route():
+    client = app.test_client()
+    response = client.get('/')
+    assert response.status_code == 200
+    assert b"Welcome" in response.data
+
 def test_home_page(client):
     """Test if the home page is accessible."""
     response = client.get('/')

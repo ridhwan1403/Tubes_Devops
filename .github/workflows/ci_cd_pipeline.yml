@@ -48,8 +48,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          pip install pytest-cov
-          pytest --cov=. --cov-report=html tests/
+          pytest --cov=app --cov-report=html tests/
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
