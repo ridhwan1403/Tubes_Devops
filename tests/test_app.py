@@ -11,7 +11,7 @@ def client():
     # Konfigurasi database untuk pengujian
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-        'DATABASE_URI', 'mysql+pymysql://root:root@test-db:3306/tubes_devsecop_app'
+        'DATABASE_URI', 'mysql+pymysql://root:root@tubes-db-1:3306/tubes_devsecop_app'
     )
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'test_secret_key')
 

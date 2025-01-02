@@ -1,30 +1,27 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.sql import text
 from dotenv import load_dotenv
 import os
 
 # Load environment variables
 load_dotenv()
+
 API_KEY = os.getenv('API_KEY')
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-    'DATABASE_URI', 'mysql+pymysql://root:root@localhost:3306/tubes_devsecop_app'
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_secret_key_here'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 db = SQLAlchemy(app)
 
-# Create database if not exists
+# Database Initialization
 def create_database():
-    engine = create_engine('mysql+pymysql://root:root@localhost:3306')
-    conn = engine.connect()
-    conn.execute(text("CREATE DATABASE IF NOT EXISTS tubes_devsecop_app"))
-    conn.close()
+    engine = create_engine('mysql+pymysql://dev:dev_password@tubes-db:3306')
+    with engine.connect() as conn:
+        conn.execute(text("CREATE DATABASE IF NOT EXISTS tubes_devsecop_app"))
 
 # Models
 class User(db.Model):
@@ -212,4 +209,4 @@ if __name__ == '__main__':
             db.session.add(admin_user)
             db.session.commit()
 
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
