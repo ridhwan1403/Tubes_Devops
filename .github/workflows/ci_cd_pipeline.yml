@@ -131,9 +131,10 @@ jobs:
       - name: Install OWASP ZAP CLI
         run: |
           sudo apt-get update
-          wget https://github.com/zaproxy/zaproxy/releases/download/v2.13.0/ZAP_2_13_0_unix.sh
-          chmod +x ZAP_2_13_0_unix.sh
-          sudo ./ZAP_2_13_0_unix.sh -q
+          sudo apt-get install -y openjdk-11-jdk wget
+          wget -O ZAP_Installer.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
+          chmod +x ZAP_Installer.zip
+          unzip ZAP_Installer.zip -d /opt/zaproxy
           sudo ln -s /opt/zaproxy/zap.sh /usr/local/bin/zap-cli
           pip install python-owasp-zap-v2.4
 
