@@ -7,7 +7,7 @@ from app import app, db
 def client():
     # Set up the Flask test client and initialize the database
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/tubes_devsecop_app'
     app.config['SECRET_KEY'] = 'test_secret_key'
     
     with app.test_client() as client:
