@@ -137,6 +137,12 @@ def admin_dashboard():
     todos = TodoItem.query.all()
     return render_template('admin_dashboard.html', users=users, todos=todos)
 
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('is_admin', None)
+    return redirect(url_for('home'))
+
 @app.route('/delete_user/<int:user_id>')
 def delete_user(user_id):
     if 'user_id' not in session or not session.get('is_admin'):
