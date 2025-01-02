@@ -76,7 +76,8 @@ jobs:
 
       - name: Run Tests
         env:
-          DATABASE_URI: ${{ secrets.DATABASE_URI }}
+          DATABASE_URI: mysql+pymysql://root:root@localhost:3306/tubes_devsecop_app
+          SECRET_KEY: test_secret_key
         run: pytest --cov=app tests/
 
       - name: Stop Docker Compose

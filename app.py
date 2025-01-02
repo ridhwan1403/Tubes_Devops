@@ -12,8 +12,7 @@ API_KEY = os.getenv('API_KEY')
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-    'DATABASE_URI',
-    'mysql+pymysql://root:root@localhost:3306/tubes_devsecop_app'
+    'DATABASE_URI', 'mysql+pymysql://root:root@localhost:3306/tubes_devsecop_app'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key_here'
