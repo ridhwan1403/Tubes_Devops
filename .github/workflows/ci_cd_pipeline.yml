@@ -128,27 +128,37 @@ jobs:
       - name: Wait for Application to be Ready
         run: sleep 30
 
-      - name: Install OWASP ZAP CLI
+      - name: Install OWASP ZAP
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jdk wget unzip
-          wget -O ZAP_Installer.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
-          chmod +x ZAP_Installer.zip
-          unzip ZAP_Installer.zip -d /opt/zaproxy
-          sudo ln -s /opt/zaproxy/zap.sh /usr/local/bin/zap-cli
-          pip install python-owasp-zap-v2.4
+          wget -O zap.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
+          unzip zap.zip -d /opt/zaproxy
+          chmod +x /opt/zaproxy/**zap.sh**
 
-      - name: Validate ZAP CLI Installation
-        run: zap-cli --help
-  
-      - name: Debug ZAP CLI
+      - name: Start OWASP ZAP
         run: |
-          ls -la /opt/zaproxy
-          ls -la /usr/local/bin
-    
-      - name: Run DAST Scan
+          nohup /opt/zaproxy/**zap.sh** -daemon -host 127.0.0.1 -port 8080 -config api.disablekey=true &
+          sleep 30
+
+      - name: Run DAST Scan Using ZAP API
         run: |
-          zap-cli quick-scan --self-contained --start-options '-daemon -config api.disablekey=true' http://127.0.0.1:5000
+          TARGET_URL="http://127.0.0.1:5000"
+          ZAP_API="http://127.0.0.1:8080/JSON"
+
+          curl -s -X GET "$ZAP_API/spider/action/scan/?url=$TARGET_URL"
+          sleep 30
+
+          curl -s -X GET "$ZAP_API/ascan/action/scan/?url=$TARGET_URL"
+          sleep 60
+
+          curl -s -X GET "$ZAP_API/core/other/htmlreport/" -o zap_report.html
+
+      - name: Save ZAP Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: ZAP Report
+          path: zap_report.html
 
       - name: Stop Docker Compose
         run: docker-compose down
