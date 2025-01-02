@@ -1,6 +1,7 @@
 flask
 flask-sqlalchemy
 pytest
+pytest-cov
 bandit
 pymysql
 python-dotenv
