@@ -77,10 +77,11 @@ jobs:
           python app.py &
           sleep 10
 
-      - name: Install OWASP ZAP
+      - name: Install OWASP ZAP CLI
         run: |
           sudo apt-get update
-          sudo apt-get install zaproxy
+          sudo apt-get install zaproxy -y
+          pip install python-owasp-zap-v2.4
 
       - name: Run DAST Scan
         run: |
@@ -92,10 +93,7 @@ jobs:
     needs: dast
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3git add .github/workflows/ci_cd_pipeline.yml
-git commit -m "Add CI/CD Pipeline"
-git push origin feature/new-feature
-
+        uses: actions/checkout@v3
 
       - name: Deploy to Staging
         run: |
