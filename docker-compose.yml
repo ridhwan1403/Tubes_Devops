@@ -7,20 +7,7 @@ services:
     environment:
       DATABASE_URI: mysql+pymysql://root:root@test-db:3306/tubes_devsecop_app
     depends_on:
-      - test-db  # Pastikan service ini bergantung pada test-db
-    networks:
-      - app-network
-  db:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: tubes_devsecop_app
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      MYSQL_ROOT_HOST: "%"
-    ports:
-      - "3306:3306"
-    command: --default-authentication-plugin=mysql_native_password
+      - test-db
     networks:
       - app-network
   test-db:
@@ -32,7 +19,7 @@ services:
       MYSQL_PASSWORD: root
       MYSQL_ROOT_HOST: "%"
     ports:
-      - "3307:3306"
+      - "3306:3306"
     command: --default-authentication-plugin=mysql_native_password
     networks:
       - app-network
