@@ -131,12 +131,20 @@ jobs:
       - name: Install OWASP ZAP CLI
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk wget
+          sudo apt-get install -y openjdk-11-jdk wget unzip
           wget -O ZAP_Installer.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
-          chmod +x ZAP_Installer.zip
           unzip ZAP_Installer.zip -d /opt/zaproxy
-          sudo ln -s /opt/zaproxy/zap.sh /usr/local/bin/zap-cli
+          chmod +x /opt/zaproxy/ZAP_2.13.0/zap.sh
+          sudo ln -sf /opt/zaproxy/ZAP_2.13.0/zap.sh /usr/local/bin/zap-cli
           pip install python-owasp-zap-v2.4
+
+      - name: Validate ZAP CLI Installation
+        run: zap-cli --help
+
+      - name: Debug ZAP CLI
+        run: |
+          ls -la /opt/zaproxy
+          ls -la /usr/local/bin
 
       - name: Run DAST Scan
         run: |
