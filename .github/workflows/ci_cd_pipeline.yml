@@ -71,8 +71,13 @@ jobs:
       - name: Start Docker Compose
         run: docker-compose up -d db
 
+      - name: Debug Docker Services
+        run: docker ps -a 
+      
       - name: Wait for MySQL to be Ready
-        run: sleep 30
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          sleep 40  # Waktu tunggu tambahan untuk MySQL memulai
 
       - name: Run Tests
         env:
