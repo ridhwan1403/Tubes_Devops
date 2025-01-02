@@ -11,8 +11,7 @@ load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
 app = Flask(__name__)
-# Ensure proper database URI configuration based on the environment (local or CI/CD)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'mysql+pymysql://root:@localhost:3306/tubes_devsecop_app')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/tubes_devsecop_app'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 
@@ -20,7 +19,7 @@ db = SQLAlchemy(app)
 
 # Create database if not exists
 def create_database():
-    engine = create_engine(os.getenv('DATABASE_URL', 'mysql+pymysql://root:@localhost:3306'))
+    engine = create_engine('mysql+pymysql://root:@localhost')
     conn = engine.connect()
     conn.execute(text("CREATE DATABASE IF NOT EXISTS tubes_devsecop_app"))
     conn.close()
