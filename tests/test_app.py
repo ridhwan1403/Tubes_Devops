@@ -1,6 +1,6 @@
 import pytest
 import os
-from app import app, db
+from app import app, db, User
 
 @pytest.fixture
 def client():
@@ -22,3 +22,8 @@ def test_register(client):
     response = client.post('/register', json={"username": "testuser", "password": "testpass"})
     assert response.status_code == 200
     assert response.json['message'] == "User registered successfully!"
+
+    # Test duplicate user registration
+    response = client.post('/register', json={"username": "testuser", "password": "testpass"})
+    assert response.status_code == 400
+    assert response.json['message'] == "Username already exists"

@@ -10,6 +10,7 @@ services:
     environment:
       - FLASK_ENV=development
       - DATABASE_URI=mysql+pymysql://dev:dev_password@tubes-db:3306/tubes_devsecop_app
+      - SECRET_KEY=test_secret_key
     depends_on:
       - db
     networks:
