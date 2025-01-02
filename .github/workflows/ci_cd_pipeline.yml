@@ -77,8 +77,7 @@ jobs:
     steps:
       - name: Start Application
         run: |
-          python app.py &
-          sleep 10
+          python app.py & sleep 10
 
       - name: Install OWASP ZAP CLI
         run: |
