@@ -69,14 +69,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Start Docker Compose
-        run: docker-compose up -d test-db
+        run: docker-compose up -d db app
 
       - name: Debug Docker Services
         run: docker ps -a 
-      
-      - name: Check Database Connectivity
-        run: |
-          docker exec $(docker ps -q -f name=test-db) mysql -uroot -proot -e "SHOW DATABASES;"
 
       - name: Wait for MySQL to be Ready
         run: |
