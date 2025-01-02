@@ -1,8 +1,8 @@
 flask
 flask-sqlalchemy
 pytest
+pytest-cov
 bandit
-pymysql 
+pymysql
 python-dotenv
 python-owasp-zap-v2.4
-pytest-cov
