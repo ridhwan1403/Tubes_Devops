@@ -130,35 +130,45 @@ jobs:
           echo "Waiting for application to start..."
           sleep 60
 
-      - name: Download and Set Up OWASP ZAP
+      - name: Install OWASP ZAP
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jdk wget unzip
           wget -O zap.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
           unzip zap.zip -d /opt/zaproxy
           chmod +x /opt/zaproxy/ZAP_D-2024-12-31/zap.sh
-      
+
       - name: Start OWASP ZAP
         run: |
           nohup /opt/zaproxy/ZAP_D-2024-12-31/zap.sh -daemon -host 127.0.0.1 -port 8080 -config api.disablekey=true &
-          sleep 30
-      
-      - name: Run ZAP Scan
+          sleep 60
+
+      - name: Verify ZAP API
+        run: |
+          curl -X GET "http://127.0.0.1:8080/JSON/core/view/version/"
+
+      - name: Run ZAP Spider
         run: |
           curl -X GET "http://127.0.0.1:8080/JSON/spider/action/scan/?url=http://localhost:5000"
           sleep 30
+
+      - name: Run ZAP Active Scan
+        run: |
           curl -X GET "http://127.0.0.1:8080/JSON/ascan/action/scan/?url=http://localhost:5000"
           sleep 60
-          curl -X GET "http://127.0.0.1:8080/OTHER/core/other/htmlreport/" -o zap_report.html
 
       - name: Save ZAP Report
+        run: |
+          curl -X GET "http://127.0.0.1:8080/OTHER/core/other/htmlreport/" -o zap_report.html
+      
+      - name: Upload ZAP Report
         uses: actions/upload-artifact@v3
         with:
           name: ZAP Report
           path: zap_report.html
-
+      
       - name: Stop Docker Compose
-        run: docker-compose down      
+        run: docker-compose down       
 
   deploy:
     name: Deployment Stage
