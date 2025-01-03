@@ -105,7 +105,13 @@ jobs:
         run: pip install bandit
 
       - name: Run SAST with Bandit
-        run: bandit -r app/
+        run: bandit -r app/ -o bandit_report.txt
+
+      - name: Upload SAST Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: Bandit Report
+          path: bandit_report.txt
 
   dast:
     name: Testing DAST Stage
