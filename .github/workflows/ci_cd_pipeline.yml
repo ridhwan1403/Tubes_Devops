@@ -3,19 +3,11 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-<<<<<<< HEAD
-<<<<<<< HEAD
       - feature/*
-=======
->>>>>>> d5294f4ac10febe4e954336c675863dcb629ae23
-=======
-      - feature/new-feature
->>>>>>> feature/new-feature
       - dev
   pull_request:
     branches:
       - dev
-<<<<<<< HEAD
       - main
 
 jobs:
@@ -210,28 +202,3 @@ jobs:
         run: |
           docker-compose -f docker-compose.yml up -d
           
-=======
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Build Stage
-        run: echo "Build stage completed!"
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Run Tests
-        run: echo "Test stage completed!"
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Deployment Stage
-        run: echo "Deployment completed!"
->>>>>>> d5294f4ac10febe4e954336c675863dcb629ae23
