@@ -83,7 +83,13 @@ jobs:
         env:
           DATABASE_URI: mysql+pymysql://dev:dev_password@127.0.0.1:3306/tubes_devsecop_app
           SECRET_KEY: test_secret_key
-        run: pytest --cov=app tests/test_app.py
+        run: pytest --cov=app tests/test_app.py --junitxml=test_report.xml
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: Test Report
+          path: test_report.xml
 
       - name: Stop Docker Compose
         run: docker-compose down
@@ -105,7 +111,7 @@ jobs:
         run: pip install bandit
 
       - name: Run SAST with Bandit
-        run: bandit -r app/ -o bandit_report.txt
+        run: bandit -r . -o bandit_report.txt
 
       - name: Upload SAST Report
         uses: actions/upload-artifact@v3
