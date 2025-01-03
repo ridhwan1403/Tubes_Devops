@@ -1,7 +1,9 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.exceptions import BadRequest, InternalServerError
 from dotenv import load_dotenv
 import os
 import logging
@@ -22,6 +24,19 @@ db = SQLAlchemy(app)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+@app.errorhandler(BadRequest)
+def handle_bad_request(e):
+    return jsonify({"error": "Bad request"}), 400
+
+@app.errorhandler(InternalServerError)
+def handle_internal_server_error(e):
+    return jsonify({"error": "An internal error occurred"}), 500
+
+@app.errorhandler(SQLAlchemyError)
+def handle_db_error(e):
+    return jsonify({"error": "A database error occurred"}), 500
 
 # Database Initialization
 def create_database():
