@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+sqlalchemy
+werkzeug
+python-dotenv
+pymysql
+pytest
+pytest-cov
+bandit
+python-owasp-zap-v2.4
+cryptography
