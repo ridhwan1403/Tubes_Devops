@@ -146,33 +146,33 @@ jobs:
       - name: Install OWASP ZAP
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-17-jdk wget unzip
-          wget -O zap.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
-          unzip zap.zip -d /opt/zaproxy
-          chmod +x /opt/zaproxy/ZAP_D-2024-12-31/zap.sh
-
+          sudo apt-get install -y openjdk-17-jdk wget
+          wget -O zap.sh https://github.com/zaproxy/zaproxy/releases/download/v2.15.0/ZAP_2_15_0_unix.sh
+          chmod +x zap.sh
+          ./zap.sh -dir /opt/zaproxy -q
+  
       - name: Start OWASP ZAP
         run: |
-          nohup /opt/zaproxy/ZAP_D-2024-12-31/zap.sh -daemon -host 127.0.0.1 -port 8080 -config api.disablekey=true &
+          nohup /opt/zaproxy/zap.sh -daemon -host 127.0.0.1 -port 8080 -config api.disablekey=true &
           sleep 60
-
+  
       - name: Verify ZAP API
         run: |
-          curl -X GET "http://127.0.0.1:8080/JSON/core/view/version/"
-
+          curl -X GET "http://127.0.0.1:8080/JSON/core/view/version/" || exit 1
+  
       - name: Run ZAP Spider
         run: |
           curl -X GET "http://127.0.0.1:8080/JSON/spider/action/scan/?url=http://localhost:5000"
           sleep 30
-
+  
       - name: Run ZAP Active Scan
         run: |
           curl -X GET "http://127.0.0.1:8080/JSON/ascan/action/scan/?url=http://localhost:5000"
           sleep 60
-
+  
       - name: Save ZAP Report
         run: |
-          curl -X GET "http://127.0.0.1:8080/OTHER/core/other/htmlreport/" -o zap_report.html
+          curl -X GET "http://127.0.0.1:8080/OTHER/core/other/htmlreport/" -o zap_report.html    
       
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v3
