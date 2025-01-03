@@ -22,20 +22,29 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 db = SQLAlchemy(app)
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("app.log"),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
-
 
 @app.errorhandler(BadRequest)
 def handle_bad_request(e):
+    logger.error(f"BadRequest: {e}")
     return jsonify({"error": "Bad request"}), 400
 
 @app.errorhandler(InternalServerError)
 def handle_internal_server_error(e):
+    logger.error(f"InternalServerError: {e}")
     return jsonify({"error": "An internal error occurred"}), 500
 
 @app.errorhandler(SQLAlchemyError)
 def handle_db_error(e):
+    logger.error(f"Database Error: {e}")
     return jsonify({"error": "A database error occurred"}), 500
 
 # Database Initialization
@@ -59,12 +68,12 @@ def wait_for_db():
     retries = 5
     while retries > 0:
         try:
-            with app.app_context():  # Ensure application context is active
+            with app.app_context():
                 with db.engine.connect() as connection:
-                    print("Database connection successful.")
+                    logger.info("Database connection successful.")
                     return
         except Exception as e:
-            print(f"Database connection failed: {e}. Retrying...")
+            logger.warning(f"Database connection failed: {e}. Retrying...")
             retries -= 1
             time.sleep(5)
     raise Exception("Database connection failed after retries")
@@ -85,10 +94,12 @@ class TodoItem(db.Model):
 # Routes
 @app.route('/')
 def home():
+    logger.info("Home page accessed")
     return render_template('home.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    logger.info("Login endpoint hit")
     if request.method == 'GET':
         login_type = request.args.get('type', 'user')
         return render_template('login.html', type=login_type)
@@ -125,6 +136,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    logger.info("Register endpoint hit")
     if request.method == 'GET':
         error = request.args.get('error')
         return render_template('register.html', error=error)
@@ -145,6 +157,7 @@ def register():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
+    logger.info("Dashboard endpoint hit")
     if 'user_id' not in session or session.get('is_admin'):
         return redirect(url_for('home'))
 
@@ -162,6 +175,7 @@ def dashboard():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_dashboard():
+    logger.info("Admin dashboard accessed")
     if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('home'))
 
