@@ -126,33 +126,16 @@ jobs:
         run: docker-compose up -d app db
 
       - name: Wait for Application to be Ready
-        run: sleep 30
-
-      - name: Install OWASP ZAP
         run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk wget unzip
-          wget -O zap.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
-          unzip zap.zip -d /opt/zaproxy
-          chmod +x /opt/zaproxy/ZAP_D-2024-12-31/zap.sh
-
-      - name: Start OWASP ZAP
-        run: |
-          nohup /opt/zaproxy/ZAP_D-2024-12-31/zap.sh -daemon -host 127.0.0.1 -port 8080 -config api.disablekey=true &
+          echo "Waiting for application to start..."
           sleep 30
+          curl -sSf http://localhost:5000 || exit 7
 
-      - name: Run DAST Scan Using ZAP API
+      - name: Run DAST Scan with OWASP ZAP Docker
         run: |
-          TARGET_URL="http://tubes-app:5000"
-          ZAP_API="http://127.0.0.1:8080/JSON"
-
-          curl -s -X GET "$ZAP_API/spider/action/scan/?url=$TARGET_URL"
-          sleep 30
-
-          curl -s -X GET "$ZAP_API/ascan/action/scan/?url=$TARGET_URL"
-          sleep 60
-
-          curl -s -X GET "$ZAP_API/core/other/htmlreport/" -o zap_report.html
+          TARGET_URL="http://localhost:5000"
+          docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py \
+          -t $TARGET_URL -r zap_report.html -J zap_report.json
 
       - name: Save ZAP Report
         uses: actions/upload-artifact@v3
@@ -161,7 +144,7 @@ jobs:
           path: zap_report.html
 
       - name: Stop Docker Compose
-        run: docker-compose down
+        run: docker-compose down      
 
   deploy:
     name: Deployment Stage
