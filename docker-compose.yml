@@ -8,13 +8,18 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development
-      - DATABASE_URI=mysql+pymysql://dev:dev_password@tubes-db:3306/tubes_devsecop_app
-      - SECRET_KEY=test_secret_key
+      FLASK_ENV: development
+      DATABASE_URI: mysql+pymysql://dev:dev_password@tubes-db:3306/tubes_devsecop_app
+      SECRET_KEY: test_secret_key
     depends_on:
       - db
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   db:
     container_name: tubes-db
@@ -28,6 +33,12 @@ services:
       - "3306:3306"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 networks:
   app-network:
+    driver: bridge
