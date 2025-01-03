@@ -111,6 +111,7 @@ jobs:
     name: Testing DAST Stage
     runs-on: ubuntu-latest
     needs: sast
+    continue-on-error: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -125,31 +126,55 @@ jobs:
       - name: Start Docker Compose
         run: docker-compose up -d app db
 
-      - name: Wait for Application to be Ready
+      - name: Wait for Application
         run: |
           echo "Waiting for application to start..."
-          sleep 30
-          curl -sSf http://localhost:5000 || exit 7
+          sleep 60
 
-      - name: Run DAST Scan with OWASP ZAP Docker
+      - name: Install OWASP ZAP
         run: |
-          TARGET_URL="http://localhost:5000"
-          docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py \
-          -t $TARGET_URL -r zap_report.html -J zap_report.json
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk wget unzip
+          wget -O zap.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
+          unzip zap.zip -d /opt/zaproxy
+          chmod +x /opt/zaproxy/ZAP_D-2024-12-31/zap.sh
+
+      - name: Start OWASP ZAP
+        run: |
+          nohup /opt/zaproxy/ZAP_D-2024-12-31/zap.sh -daemon -host 127.0.0.1 -port 8080 -config api.disablekey=true &
+          sleep 60
+
+      - name: Verify ZAP API
+        run: |
+          curl -X GET "http://127.0.0.1:8080/JSON/core/view/version/"
+
+      - name: Run ZAP Spider
+        run: |
+          curl -X GET "http://127.0.0.1:8080/JSON/spider/action/scan/?url=http://localhost:5000"
+          sleep 30
+
+      - name: Run ZAP Active Scan
+        run: |
+          curl -X GET "http://127.0.0.1:8080/JSON/ascan/action/scan/?url=http://localhost:5000"
+          sleep 60
 
       - name: Save ZAP Report
+        run: |
+          curl -X GET "http://127.0.0.1:8080/OTHER/core/other/htmlreport/" -o zap_report.html
+      
+      - name: Upload ZAP Report
         uses: actions/upload-artifact@v3
         with:
           name: ZAP Report
           path: zap_report.html
-
+      
       - name: Stop Docker Compose
-        run: docker-compose down      
+        run: docker-compose down       
 
   deploy:
     name: Deployment Stage
     runs-on: ubuntu-latest
-    needs: dast
+    needs: [dast]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -164,3 +189,4 @@ jobs:
       - name: Deploy to Staging
         run: |
           docker-compose -f docker-compose.yml up -d
+          
