@@ -132,7 +132,7 @@ jobs:
 
       - name: Run OWASP ZAP Scan
         run: |
-          docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py \
+          docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap zap-full-scan.py \
           -t http://localhost:5000 -r zap_report.html -J zap_report.json
 
       - name: Save ZAP Report
