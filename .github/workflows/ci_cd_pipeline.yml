@@ -4,9 +4,13 @@ on:
   push:
     branches:
 <<<<<<< HEAD
+<<<<<<< HEAD
       - feature/*
 =======
 >>>>>>> d5294f4ac10febe4e954336c675863dcb629ae23
+=======
+      - feature/new-feature
+>>>>>>> feature/new-feature
       - dev
   pull_request:
     branches:
