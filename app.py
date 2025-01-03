@@ -44,11 +44,12 @@ def wait_for_db():
     retries = 5
     while retries > 0:
         try:
-            with db.engine.connect() as connection:
-                logger.info("Database connection successful.")
-                return
+            with app.app_context():  # Ensure application context is active
+                with db.engine.connect() as connection:
+                    print("Database connection successful.")
+                    return
         except Exception as e:
-            logger.warning(f"Database connection failed: {e}. Retrying...")
+            print(f"Database connection failed: {e}. Retrying...")
             retries -= 1
             time.sleep(5)
     raise Exception("Database connection failed after retries")
