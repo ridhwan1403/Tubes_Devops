@@ -149,7 +149,7 @@ jobs:
           sudo apt-get install -y openjdk-17-jdk wget
           wget -O zap.sh https://github.com/zaproxy/zaproxy/releases/download/v2.15.0/ZAP_2_15_0_unix.sh
           chmod +x zap.sh
-          ./zap.sh -dir /opt/zaproxy -q
+          sudo ./zap.sh -dir /opt/zaproxy -q
   
       - name: Start OWASP ZAP
         run: |
