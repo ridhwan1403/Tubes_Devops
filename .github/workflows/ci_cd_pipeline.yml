@@ -133,7 +133,7 @@ jobs:
       - name: Install OWASP ZAP
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk wget unzip
+          sudo apt-get install -y openjdk-17-jdk wget unzip
           wget -O zap.zip https://github.com/zaproxy/zaproxy/releases/download/w2024-12-31/ZAP_WEEKLY_D-2024-12-31.zip
           unzip zap.zip -d /opt/zaproxy
           chmod +x /opt/zaproxy/ZAP_D-2024-12-31/zap.sh
